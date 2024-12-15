@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Business Analysis Tool</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
+      color: #fff;
+      animation: fadeIn 1s ease-in-out;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 50px auto;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(10px);
+      opacity: 0;
+      animation: fadeInUp 1s ease-in-out forwards;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #ffce45;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+      animation: slideIn 1s ease-out;
+    }
+
+    p {
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 1.2rem;
+      animation: fadeIn 1s ease-in-out;
+    }
+
+    .form-group {
+      margin: 15px 0;
+      animation: fadeIn 1s ease-in-out;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: bold;
+      color: #ffce45;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      outline: none;
+      font-size: 16px;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(90deg, #ff7e5f, #feb47b);
+      border: none;
+      border-radius: 8px;
+      font-size: 18px;
+      font-weight: bold;
+      color: #fff;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 10px rgba(255, 126, 95, 0.5);
+      animation: fadeInUp 1s ease-in-out;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(255, 126, 95, 0.8);
+    }
+
+    .charts-container {
+      margin-top: 30px;
+      text-align: center;
+      animation: fadeInUp 1s ease-in-out;
+    }
+
+    canvas {
+      margin-top: 20px;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      opacity: 0;
+      animation: fadeInUp 1s ease-in-out forwards;
+    }
+
+    .prediction-text {
+      margin-top: 20px;
+      font-size: 1.1rem;
+      color: #ffce45;
+      text-align: center;
+      animation: fadeIn 1s ease-in-out;
+    }
+
+    .circle-label {
+      position: relative;
+      display: inline-block;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      margin-right: 15px;
+      text-align: center;
+      line-height: 30px;
+      font-weight: bold;
+      color: #fff;
+      opacity: 0;
+      animation: fadeIn 1s ease-in-out;
+    }
+
+    .green-circle {
+      background-color: #4caf50;
+    }
+
+    .red-circle {
+      background-color: #f44336;
+    }
+
+    footer {
+      background: #1e3c72;
+      color: #fff;
+      text-align: center;
+      padding: 10px;
+      position: fixed;
+      width: 100%;
+      bottom: 0;
+      animation: slideInUp 1s ease-out;
+    }
+
+    footer p {
+      margin: 0;
+      font-size: 0.9rem;
+    }
+
+    footer a {
+      color: rgb(252, 251, 251);
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+
+    @keyframes fadeIn {
+      0% {
+        opacity: 0;
+      }
+      100% {
+        opacity: 1;
+      }
+    }
+
+    @keyframes fadeInUp {
+      0% {
+        opacity: 0;
+        transform: translateY(220px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes slideIn {
+      0% {
+        transform: translateX(-200px);
+        opacity: 0;
+      }
+      100% {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes slideInUp {
+      0% {
+        transform: translateY(20px);
+        opacity: 0;
+      }
+      100% {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Business Analysis Tool</h1>
+    <p>Analyze your business trends and predict future performance with detailed insights.</p>
+    
+    <div class="form-group">
+      <label for="revenue">Monthly Revenue (comma-separated):</label>
+      <input type="text" id="revenue" placeholder="e.g., 20000, 25000, 30000">
+    </div>
+    <div class="form-group">
+      <label for="expenses">Monthly Expenses (comma-separated):</label>
+      <input type="text" id="expenses" placeholder="e.g., 15000, 18000, 20000">
+    </div>
+    <div class="form-group">
+      <label for="period">Prediction Period (in months):</label>
+      <input type="number" id="period" placeholder="e.g., 12">
+    </div>
+    <button class="btn" onclick="generatePrediction()">Predict and Update Graph</button>
+
+    <div class="charts-container">
+      <canvas id="lineChart"></canvas>
+    </div>
+
+    <div class="prediction-text" id="predictionText"></div>
+  </div>
+
+  <footer>
+    <p>&copy; 2024 Business Analysis Tool | Developed by <a href="https://www.linkedin.com/in/aniket-singh-489127280/" target="_blank">Aniket Singh</a></p>
+  </footer>
+
+  <script>
+    const ctx = document.getElementById('lineChart').getContext('2d');
+    let lineChart;
+
+    function initializeChart() {
+      lineChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: [],
+          datasets: [
+            {
+              label: 'Revenue ($)',
+              data: [],
+              borderColor: '#4caf50',
+              backgroundColor: 'rgba(76, 175, 80, 0.3)',
+              borderWidth: 2,
+              tension: 0.4,
+              fill: true,
+            },
+            {
+              label: 'Expenses ($)',
+              data: [],
+              borderColor: '#f44336',
+              backgroundColor: 'rgba(244, 67, 54, 0.3)',
+              borderWidth: 2,
+              tension: 0.4,
+              fill: true,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: 'top',
+              labels: {
+                color: '#fff',
+                boxWidth: 20,
+                usePointStyle: true,
+              },
+            },
+            tooltip: {
+              callbacks: {
+                label: function (context) {
+                  return `${context.dataset.label}: $${context.raw}`;
+                },
+              },
+            },
+          },
+          scales: {
+            x: {
+              ticks: { color: '#fff' },
+              grid: { color: 'rgba(255, 255, 255, 0.2)' },
+              title: {
+                display: true,
+                text: 'Months',
+                color: '#fff',
+              },
+            },
+            y: {
+              ticks: { color: '#fff' },
+              grid: { color: 'rgba(255, 255, 255, 0.2)' },
+              title: {
+                display: true,
+                text: 'Amount ($)',
+                color: '#fff',
+              },
+            },
+          },
+        },
+      });
+    }
+
+    function generatePrediction() {
+      const revenueInput = document.getElementById('revenue').value;
+      const expensesInput = document.getElementById('expenses').value;
+      const period = parseInt(document.getElementById('period').value);
+
+      if (!revenueInput || !expensesInput || isNaN(period)) {
+        alert('Please provide valid inputs for revenue, expenses, and period.');
+        return;
+      }
+
+      const revenue = revenueInput.split(',').map(Number);
+      const expenses = expensesInput.split(',').map(Number);
+
+      if (revenue.length !== expenses.length) {
+        alert('Revenue and expenses must have the same number of values.');
+        return;
+      }
+
+      const avgRevenue = revenue.reduce((sum, val) => sum + val, 0) / revenue.length;
+      const avgExpenses = expenses.reduce((sum, val) => sum + val, 0) / expenses.length;
+
+      const predictedRevenue = Array(period).fill(avgRevenue);
+      const predictedExpenses = Array(period).fill(avgExpenses);
+
+      const labels = [...Array(revenue.length).keys()].map((i) => `Month ${i + 1}`);
+      const futureLabels = [...Array(period).keys()].map((i) => `Future ${i + 1}`);
+      const allLabels = [...labels, ...futureLabels];
+
+      lineChart.data.labels = allLabels;
+      lineChart.data.datasets[0].data = [...revenue, ...predictedRevenue];
+      lineChart.data.datasets[1].data = [...expenses, ...predictedExpenses];
+
+      lineChart.update();
+
+      const predictedProfit = predictedRevenue.reduce((sum, val, idx) => sum + (val - predictedExpenses[idx]), 0);
+
+      document.getElementById('predictionText').innerHTML = `
+        <div style="display: flex; justify-content: center; align-items: center; gap: 15px;">
+          <div class="circle-label green-circle">Revenue</div>
+          <div class="circle-label red-circle">Expenses</div>
+        </div>
+        <p><strong>Predicted Profit:</strong> $${predictedProfit.toFixed(2)}</p>
+        <p>The revenue is expected to grow steadily at an average of $${avgRevenue.toFixed(2)} per month. Meanwhile, the expenses will remain relatively stable at $${avgExpenses.toFixed(2)} per month, leading to a positive predicted profit.</p>
+      `;
+    }
+
+    initializeChart();
+  </script>
+</body>
+</html>
